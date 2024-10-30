@@ -3,6 +3,29 @@ import { PrismaClient } from "@prisma/client"
 const prisma = new PrismaClient()
 
 async function main() {
+   const newUser = await prisma.user.create({
+        data: {
+            name: "Yolo",
+            email: "emaaaaaailasdasda@example.com"
+        }
+    })
+   const newPost = await prisma.post.create({
+        data: {
+            title: "Mi primer post",
+            conten: "Contenido del post",
+            // authorId: newUser.id Esta es una forma de que la conectemos
+            author: {
+                connect: {
+                    id: newUser.id
+                }
+            }
+        }
+    })
+    console.log(newPost);
+}
+
+
+async function createData() {
     const newUser = await prisma.user.create({
         data: {
             name: "Juan",
@@ -11,6 +34,7 @@ async function main() {
     })
     console.log(newUser);
 }
+
 
 async function getData() {
     const users = await prisma.user.findMany()
@@ -91,4 +115,32 @@ async function upsertData() {
 
 
 
-getData();
+//traer data junto con las relaciones
+
+async function getDataWithRelations() {
+
+    const newPost = await prisma.post.create({
+        data: {
+            title: "El post buenisimo",
+            conten: "Contenido del post",
+            authorId: 2   
+        }
+    })
+
+    const user = await prisma.user.findMany({
+        include: {
+            post: true
+        }
+    })
+    user.forEach(x => {
+        console.log("-------------");
+        console.log(`User: ${x.name}`);
+        console.log(`Emil: ${x.email}`);
+
+        x.post.forEach((post,i) => {
+            console.log(`Post ${i+1}: ${post.title}`);
+        }) 
+    });
+}
+
+getDataWithRelations()
